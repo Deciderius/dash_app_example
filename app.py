@@ -1,238 +1,180 @@
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": 3,
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stderr",
-     "output_type": "stream",
-     "text": [
-      " * Running on http://127.0.0.1:8050/ (Press CTRL+C to quit)\n",
-      "127.0.0.1 - - [20/Dec/2018 14:04:59] \"GET / HTTP/1.1\" 200 -\n",
-      "127.0.0.1 - - [20/Dec/2018 14:05:00] \"GET /_dash-layout HTTP/1.1\" 200 -\n",
-      "127.0.0.1 - - [20/Dec/2018 14:05:00] \"GET /_dash-dependencies HTTP/1.1\" 200 -\n",
-      "127.0.0.1 - - [20/Dec/2018 14:05:01] \"POST /_dash-update-component HTTP/1.1\" 200 -\n",
-      "127.0.0.1 - - [20/Dec/2018 14:05:01] \"POST /_dash-update-component HTTP/1.1\" 200 -\n",
-      "127.0.0.1 - - [20/Dec/2018 14:05:01] \"GET /favicon.ico HTTP/1.1\" 200 -\n",
-      "127.0.0.1 - - [20/Dec/2018 14:05:05] \"POST /_dash-update-component HTTP/1.1\" 200 -\n",
-      "127.0.0.1 - - [20/Dec/2018 14:05:06] \"POST /_dash-update-component HTTP/1.1\" 200 -\n",
-      "127.0.0.1 - - [20/Dec/2018 14:05:09] \"POST /_dash-update-component HTTP/1.1\" 200 -\n",
-      "127.0.0.1 - - [20/Dec/2018 14:05:10] \"POST /_dash-update-component HTTP/1.1\" 200 -\n",
-      "127.0.0.1 - - [20/Dec/2018 14:05:10] \"POST /_dash-update-component HTTP/1.1\" 200 -\n",
-      "127.0.0.1 - - [20/Dec/2018 14:05:13] \"POST /_dash-update-component HTTP/1.1\" 200 -\n",
-      "127.0.0.1 - - [20/Dec/2018 14:05:14] \"POST /_dash-update-component HTTP/1.1\" 200 -\n",
-      "127.0.0.1 - - [20/Dec/2018 14:05:25] \"POST /_dash-update-component HTTP/1.1\" 200 -\n",
-      "127.0.0.1 - - [20/Dec/2018 14:05:29] \"POST /_dash-update-component HTTP/1.1\" 200 -\n",
-      "127.0.0.1 - - [20/Dec/2018 14:05:31] \"POST /_dash-update-component HTTP/1.1\" 200 -\n",
-      "127.0.0.1 - - [20/Dec/2018 14:05:35] \"POST /_dash-update-component HTTP/1.1\" 200 -\n",
-      "127.0.0.1 - - [20/Dec/2018 14:05:39] \"POST /_dash-update-component HTTP/1.1\" 200 -\n"
-     ]
+
+# coding: utf-8
+
+# In[ ]:
+
+
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+import plotly.graph_objs as go
+import pandas as pd
+
+app = dash.Dash()
+app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
+df = pd.read_csv('nama_10_gdp_1_Data.csv')
+df= df.drop(df[df.Value.isin([':'])].index) 
+df_cleaned = df[~df.GEO.str.contains("Euro")]
+
+available_indicators = df_cleaned['NA_ITEM'].unique()
+avaliable_units = df_cleaned['UNIT'].unique()
+avaliable_countries = df_cleaned['GEO'].unique()
+
+app.layout = html.Div([
+    html.H1('Thomas Deciderus Final Project', style={'textAlign': 'center', 'color': 'blue'}),
+    html.H2('Indicators Figures',style={'textAlign': 'center', 'color': 'black'}),
+    html.Div([
+
+        html.Div([
+            dcc.Dropdown(
+                id='xaxis-column',
+                options=[{'label': i, 'value': i} for i in available_indicators],
+                value="Gross domestic product at market prices"
+            ),
+            html.Div(style={'height': 15}),
+            dcc.RadioItems(
+                id='Units',
+                options=[{'label': i, 'value': i} for i in avaliable_units],
+                value='Chain linked volumes, index 2010=100')
+        ],
+        style={'width': '48%', 'display': 'inline-block'}),
+
+        html.Div([
+            dcc.Dropdown(
+                id='yaxis-column',
+                options=[{'label': i, 'value': i} for i in available_indicators],
+                value="Gross domestic product at market prices"
+            ),
+            html.Div(style={'height': 15}),
+            dcc.RadioItems(
+                id='yaxis-type',
+                options=[{'label': i, 'value': i} for i in ['Linear', 'Log']],
+                value='Linear',
+                labelStyle={'display': 'inline-block'}
+            )
+        ],style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
+    ]),
+
+    dcc.Graph(id='indicator-graphic'),
+
+    dcc.Slider(
+        id='year--slider',
+        min=df_cleaned['TIME'].min(),
+        max=df_cleaned['TIME'].max(),
+        value=df_cleaned['TIME'].max(),
+        step=None,
+        marks={str(TIME): str(TIME) for TIME in df_cleaned['TIME'].unique()}
+    ),
+    html.Div(style={'height': 80}),
+    
+    html.Div([
+        html.Div([
+            dcc.Dropdown(
+                id='countries2',
+                options=[{'label': i, 'value': i} for i in avaliable_countries],
+                value='Belgium'
+            ),
+        html.Div(style={'height': 15}),
+        dcc.Dropdown(
+                id='UNITS2',
+                options=[{'label': i, 'value': i} for i in avaliable_units],
+                value='Chain linked volumes, index 2010=100')
+        ],
+        style={'width': '48%', 'display': 'inline-block'}),
+
+        html.Div([
+            dcc.Dropdown(
+                id='yaxis_column2',
+                options=[{'label': i, 'value': i} for i in available_indicators],
+                value="Gross domestic product at market prices"
+            ),
+            html.Div(style={'height': 15}),
+            dcc.RadioItems(
+                id='yaxis_type2',
+                options=[{'label': i, 'value': i} for i in ['Linear', 'Log']],
+                value='Linear',
+                labelStyle={'display': 'inline-block'}
+            )
+        ],style={'width': '48%','float':'right' ,'display': 'inline-block'}),
+
+    dcc.Graph(id='indicator-graphic2')])
+    
+    
+])
+
+@app.callback(
+    dash.dependencies.Output('indicator-graphic', 'figure'),
+    [dash.dependencies.Input('xaxis-column', 'value'),
+     dash.dependencies.Input('yaxis-column', 'value'),
+     dash.dependencies.Input('yaxis-type', 'value'),
+     dash.dependencies.Input('year--slider', 'value'),
+     dash.dependencies.Input('Units', 'value')])
+
+
+def update_graph(xaxis_column_name, yaxis_column_name,
+                yaxis_type, TIME_value, Units):
+    dff = df_cleaned[df_cleaned['TIME'] == TIME_value]
+    dfu = dff[dff['UNIT'] == Units]
+    
+    return {
+        'data': [go.Scatter(
+            x=dfu[dfu['NA_ITEM'] == xaxis_column_name]['Value'],
+            y=dfu[dfu['NA_ITEM'] == yaxis_column_name]['Value'],
+            text=dfu[dfu['NA_ITEM'] == yaxis_column_name]['GEO'],
+            mode='markers',
+            marker={
+                'size': 15,
+                'opacity': 0.5,
+                'line': {'width': 0.5, 'color': 'white'}
+            }
+        )],
+        'layout': go.Layout(
+            xaxis={
+                'title': xaxis_column_name,
+                'type': 'linear' if Units == 'Linear' else 'log'
+            },
+            yaxis={
+                'title': yaxis_column_name,
+                'type': 'linear' if yaxis_type == 'Linear' else 'log'
+            },
+            margin={'l': 90, 'b': 50, 't': 50, 'r': 90},
+            hovermode='closest'
+        )
     }
-   ],
-   "source": [
-    "import dash\n",
-    "import dash_core_components as dcc\n",
-    "import dash_html_components as html\n",
-    "import plotly.graph_objs as go\n",
-    "import pandas as pd\n",
-    "\n",
-    "app = dash.Dash(__name__)\n",
-    "server = app.server\n",
-    "\n",
-    "app.css.append_css({\"external_url\": \"https://codepen.io/chriddyp/pen/bWLwgP.css\"})\n",
-    "\n",
-    "df = pd.read_csv('nama_10_gdp_1_Data.csv')\n",
-    "\n",
-    "df= df.drop(df[df.Value.isin([':'])].index) \n",
-    "df_cleaned = df[~df.GEO.str.contains(\"Euro\")]\n",
-    "\n",
-    "available_indicators = df_cleaned['NA_ITEM'].unique()\n",
-    "avaliable_units = df_cleaned['UNIT'].unique()\n",
-    "avaliable_countries = df_cleaned['GEO'].unique()\n",
-    "\n",
-    "app.layout = html.Div([\n",
-    "    html.H1('Cloud Computing: Final Project', style={'textAlign': 'center', 'color': 'blue'}),\n",
-    "    html.H2('Thomas Deciderius Poulsen', style={'textAlign': 'center', 'size': 20, 'color': 'blue'}),\n",
-    "    html.H3('Figure 1: Relationship between economic factors',style={'textAlign': 'center', 'color': 'black'}),\n",
-    "    html.Div([\n",
-    "\n",
-    "        html.Div([\n",
-    "            dcc.Dropdown(\n",
-    "                id='xaxis-column',\n",
-    "                options=[{'label': i, 'value': i} for i in available_indicators],\n",
-    "                value=\"Gross domestic product at market prices\"\n",
-    "            ),\n",
-    "            html.Div(style={'height': 15}),\n",
-    "            dcc.RadioItems(\n",
-    "                id='Units',\n",
-    "                options=[{'label': i, 'value': i} for i in avaliable_units],\n",
-    "                value='Chain linked volumes, index 2010=100')\n",
-    "        ],\n",
-    "        style={'width': '48%', 'display': 'inline-block'}),\n",
-    "\n",
-    "        html.Div([\n",
-    "            dcc.Dropdown(\n",
-    "                id='yaxis-column',\n",
-    "                options=[{'label': i, 'value': i} for i in available_indicators],\n",
-    "                value=\"Gross domestic product at market prices\"\n",
-    "            ),\n",
-    "            html.Div(style={'height': 15}),\n",
-    "            dcc.RadioItems(\n",
-    "                id='yaxis-type',\n",
-    "                options=[{'label': i, 'value': i} for i in ['Linear', 'Log']],\n",
-    "                value='Linear',\n",
-    "                labelStyle={'display': 'inline-block'}\n",
-    "            )\n",
-    "        ],style={'width': '48%', 'float': 'right', 'display': 'inline-block'})\n",
-    "    ]),\n",
-    "\n",
-    "    dcc.Graph(id='indicator-graphic', \n",
-    "              clickData={'points': [{'customdata': 'Belgium'}]}\n",
-    "             ),\n",
-    "    \n",
-    "\n",
-    "    dcc.Slider(\n",
-    "        id='year--slider',\n",
-    "        min=df_cleaned['TIME'].min(),\n",
-    "        max=df_cleaned['TIME'].max(),\n",
-    "        value=df_cleaned['TIME'].max(),\n",
-    "        step=None,\n",
-    "        marks={str(TIME): str(TIME) for TIME in df_cleaned['TIME'].unique()}\n",
-    "    ),\n",
-    "    html.Div(style={'height': 80}),\n",
-    "    #Second figure\n",
-    "    \n",
-    "    html.H4('Figure 2: Economic factors by country (over time)' ,style={'textAlign': 'center', 'color': 'black'}),\n",
-    "    \n",
-    "    html.Div([\n",
-    "        html.Div([\n",
-    "        dcc.Dropdown(\n",
-    "                id='UNITS2',\n",
-    "                options=[{'label': i, 'value': i} for i in avaliable_units],\n",
-    "                value='Chain linked volumes, index 2010=100')\n",
-    "        ],\n",
-    "        style={'width': '48%', 'display': 'inline-block'}),\n",
-    "\n",
-    "        html.Div([\n",
-    "            dcc.Dropdown(\n",
-    "                id='yaxis_column2',\n",
-    "                options=[{'label': i, 'value': i} for i in available_indicators],\n",
-    "                value=\"Gross domestic product at market prices\"\n",
-    "            ),\n",
-    "            html.Div(style={'height': 15}),\n",
-    "            dcc.RadioItems(\n",
-    "                id='yaxis_type2',\n",
-    "                options=[{'label': i, 'value': i} for i in ['Linear', 'Log']],\n",
-    "                value='Linear',\n",
-    "                labelStyle={'display': 'inline-block'}\n",
-    "            )\n",
-    "        ],style={'width': '48%','float':'right' ,'display': 'inline-block'}),\n",
-    "\n",
-    "    dcc.Graph(id='indicator-graphic2')])\n",
-    "    \n",
-    "    \n",
-    "])\n",
-    "\n",
-    "@app.callback(\n",
-    "    dash.dependencies.Output('indicator-graphic', 'figure'),\n",
-    "    [dash.dependencies.Input('xaxis-column', 'value'),\n",
-    "     dash.dependencies.Input('yaxis-column', 'value'),\n",
-    "     dash.dependencies.Input('yaxis-type', 'value'),\n",
-    "     dash.dependencies.Input('year--slider', 'value'),\n",
-    "     dash.dependencies.Input('Units', 'value')])\n",
-    "\n",
-    "\n",
-    "def update_graph(xaxis_column_name, yaxis_column_name,\n",
-    "                yaxis_type, TIME_value, Units):\n",
-    "    dff = df_cleaned[df_cleaned['TIME'] == TIME_value]\n",
-    "    dfu = dff[dff['UNIT'] == Units]\n",
-    "    \n",
-    "    return {\n",
-    "        'data': [go.Scatter(\n",
-    "            x=dfu[(dfu['NA_ITEM'] == xaxis_column_name) & (dfu['GEO']== i)]['Value'],\n",
-    "            y=dfu[(dfu['NA_ITEM'] == yaxis_column_name) & (dfu['GEO']== i)]['Value'],\n",
-    "            text=dfu[(dfu['NA_ITEM'] == yaxis_column_name) & (dfu['GEO']== i)]['GEO'],\n",
-    "            customdata=dfu[(dfu['NA_ITEM'] == yaxis_column_name)&(dfu['GEO']== i)]['GEO'],\n",
-    "            mode='markers',\n",
-    "            marker={\n",
-    "                'size': 15,\n",
-    "                'opacity': 0.5,\n",
-    "                'line': {'width': 0.5, 'color': 'black'}\n",
-    "            }, name=i[:15]) \n",
-    "                 for i in df.GEO.unique()\n",
-    "        ], \n",
-    "        'layout': go.Layout(\n",
-    "            xaxis={\n",
-    "                'title': xaxis_column_name,\n",
-    "                'type': 'linear' if Units == 'Linear' else 'log'\n",
-    "            },\n",
-    "            yaxis={\n",
-    "                'title': yaxis_column_name,\n",
-    "                'type': 'linear' if yaxis_type == 'Linear' else 'log'\n",
-    "            },\n",
-    "            margin={'l': 90, 'b': 50, 't': 50, 'r': 90},\n",
-    "            hovermode='closest'\n",
-    "        )\n",
-    "    }\n",
-    "# Number 2\n",
-    "@app.callback(\n",
-    "    dash.dependencies.Output('indicator-graphic2', 'figure'),\n",
-    "    [dash.dependencies.Input('indicator-graphic', 'clickData'),\n",
-    "     dash.dependencies.Input('yaxis_column2', 'value'),\n",
-    "     dash.dependencies.Input('yaxis_type2', 'value'),\n",
-    "     dash.dependencies.Input('UNITS2', 'value')])\n",
-    "\n",
-    "\n",
-    "def update_graph2(clickData, yaxis_column2,\n",
-    "                  yaxis_type2, UNITS2):\n",
-    "    \n",
-    "    dff = df_cleaned[(df_cleaned['UNIT']==UNITS2) & (df_cleaned['GEO'] ==clickData['points'][0]['customdata'])]\n",
-    "\n",
-    "    return {\n",
-    "        'data': [go.Scatter(\n",
-    "            x=dff['TIME'].unique(), #Needs to get all the unique values of TIME\n",
-    "            y=dff[dff['NA_ITEM'] == yaxis_column2]['Value'],\n",
-    "            text=dff[dff['NA_ITEM'] == yaxis_column2]['GEO'],\n",
-    "            mode='lines'\n",
-    "        )],\n",
-    "        \n",
-    "        'layout': go.Layout(\n",
-    "            title= yaxis_column2 + ' / ' + clickData['points'][0]['customdata'],\n",
-    "            xaxis={\n",
-    "                'title': 'years'\n",
-    "            },\n",
-    "            yaxis={\n",
-    "                'title': yaxis_column2,\n",
-    "                'type': 'linear' if yaxis_type2 == 'Linear' else 'log'\n",
-    "            },\n",
-    "            margin={'l': 90, 'b': 50, 't': 50, 'r': 90},\n",
-    "            hovermode='closest'\n",
-    "        )\n",
-    "    }\n",
-    "\n",
-    "\n",
-    "\n",
-    "if __name__ == '__main__':\n",
-    "    app.run_server()\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": []
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python 3",
-   "language": "python",
-   "name": "python3"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 2
-}
+
+@app.callback(
+    dash.dependencies.Output('indicator-graphic2', 'figure'),
+    [dash.dependencies.Input('countries2', 'value'),
+     dash.dependencies.Input('yaxis_column2', 'value'),
+     dash.dependencies.Input('yaxis_type2', 'value'),
+     dash.dependencies.Input('UNITS2', 'value')])
+    
+def update_graph2(countries2, yaxis_column2,yaxis_type2, UNITS2):
+    
+    dff = df_cleaned[(df_cleaned['GEO'] == countries2)& (df_cleaned['UNIT'] == UNITS2)]
+
+    return {
+        'data': [go.Scatter(
+            x=dff['TIME'].unique(), #Needs to get all the unique values of TIME
+            y=dff[dff['NA_ITEM'] == yaxis_column2]['Value'],
+            mode='lines'
+        )],
+        
+        'layout': go.Layout(
+            xaxis={
+                'title': 'years'
+            },
+            yaxis={
+                'title': yaxis_column2,
+                'type': 'linear' if yaxis_type2 == 'Linear' else 'log'
+            },
+            margin={'l': 90, 'b': 50, 't': 50, 'r': 90},
+            hovermode='closest'
+        )
+    }
+
+
+
+if __name__ == '__main__':
+    app.run_server()
+
